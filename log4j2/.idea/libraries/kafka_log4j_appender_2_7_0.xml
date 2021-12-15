@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="kafka-log4j-appender-2.7.0">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Downloads/EDR/kafka-log4j-appender-2.7.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ideaLibSources/kafka-log4j-appender-2.7.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
