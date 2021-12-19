@@ -1,2 +1,3 @@
-# JavaSecurtiyCode
-Some example used for learning security problem related to Java.
+# codecurtiy
+
+Demo code used for learning and pratice.
