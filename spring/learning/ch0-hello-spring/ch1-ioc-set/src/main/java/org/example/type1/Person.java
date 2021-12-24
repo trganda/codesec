@@ -1,10 +1,18 @@
-package org.example;
+package org.example.type1;
+
+import org.example.Tool;
 
 public class Person {
     private String name;
     private int age;
     // Reference Type
     private Tool tool;
+
+    Person(String name, int age, Tool tool) {
+        this.name = name;
+        this.age = age;
+        this.tool = tool;
+    }
 
     public void setName(String name) {
         System.out.println("call setName");
