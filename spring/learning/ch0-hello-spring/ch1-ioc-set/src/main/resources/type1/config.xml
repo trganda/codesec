@@ -4,7 +4,10 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="person" class="org.example.type0.Person">
+    <!--
+        construct an object with its construction method
+    -->
+    <bean id="person" class="org.example.type1.Person">
         <constructor-arg name="name" value="deemo"/>
         <constructor-arg name="age" value="18"/>
         <constructor-arg name="tool" ref="tool"/>
@@ -12,6 +15,14 @@
 
     <bean id="tool" class="org.example.Tool">
         <property name="name" value="hummer"/>
+    </bean>
+
+    <!--
+        create a File object
+    -->
+    <bean id="ifile" class="java.io.File">
+        <constructor-arg name="parent" value="/Users/trganda/Projects/github/JavaSecurtiyCode"/>
+        <constructor-arg name="child" value="README.md"/>
     </bean>
 
 </beans>
