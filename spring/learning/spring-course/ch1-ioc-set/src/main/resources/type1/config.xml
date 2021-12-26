@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--
+        construct an object with its construction method
+    -->
+    <bean id="person0" class="org.example.type1.Person">
+        <constructor-arg name="name" value="deemo"/>
+        <constructor-arg name="age" value="18"/>
+        <constructor-arg name="tool" ref="tool"/>
+    </bean>
+
+    <bean id="tool0" class="org.example.Tool">
+        <property name="name" value="hummer"/>
+    </bean>
+
+    <!--
+        create a File object
+    -->
+    <bean id="ifile" class="java.io.File">
+        <constructor-arg name="parent" value="/Users/trganda/Projects/github/JavaSecurtiyCode"/>
+        <constructor-arg name="child" value="README.md"/>
+    </bean>
+
+    <!--
+        reference by name
+    -->
+    <bean id="person1" class="org.example.type0.Person" autowire="byName">
+        <property name="name" value="deemo"/>
+        <property name="age" value="18"/>
+    </bean>
+
+    <bean id="tool" class="org.example.Tool">
+        <property name="name" value="hummer"/>
+    </bean>
+
+</beans>
