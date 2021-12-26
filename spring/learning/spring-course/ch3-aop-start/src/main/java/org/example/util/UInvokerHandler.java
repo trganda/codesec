@@ -12,8 +12,10 @@ public class UInvokerHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        method.invoke(obj, args);
+        Object ret = null;
+
+        ret = method.invoke(obj, args);
         System.out.println("call with proxy.");
-        return null;
+        return ret;
     }
 }
