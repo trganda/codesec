@@ -9,11 +9,12 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-public class RMIServer {
+public class OrdinaryRMIServer {
 
     public void startListener(String name, Object obj) throws RemoteException, AlreadyBoundException {
         Registry reg = LocateRegistry.createRegistry(9099);
-
+        // If the obj has no extens the UnicastRemoteObject, call exportObject
+        // to return a stub
         if (!(obj instanceof UnicastRemoteObject)) {
            obj = UnicastRemoteObject.exportObject((Remote) obj, 0);
         }
@@ -22,7 +23,7 @@ public class RMIServer {
 
     public static void main(String[] args) {
         try {
-            RMIServer rs = new RMIServer();
+            OrdinaryRMIServer rs = new OrdinaryRMIServer();
             RemoteServiceImpl rsi = new RemoteServiceImpl();
             rs.startListener("server", rsi);
         } catch (Exception ex) {

@@ -7,7 +7,7 @@ import java.rmi.registry.Registry;
 
 import org.trganda.remote.RemoteService;
 
-public class RMIClient {
+public class OrdinaryRMIClient {
 
     public void callRemote(String name) throws RemoteException, NotBoundException {
         Registry registry = LocateRegistry.getRegistry("127.0.0.1", 9099);
@@ -18,7 +18,7 @@ public class RMIClient {
 
     public static void main(String[] args) {
         try {
-            RMIClient rc = new RMIClient();
+            OrdinaryRMIClient rc = new OrdinaryRMIClient();
 
             rc.callRemote("server");
         } catch (Exception ex) {
