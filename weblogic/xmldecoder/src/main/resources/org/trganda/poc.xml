@@ -1,0 +1,10 @@
+<java>
+    <object class="java.lang.ProcessBuilder">
+        <array class="java.lang.String" length="1">
+            <void index="0">
+                <string>calc</string>
+            </void>
+        </array>
+        <void method="start"/>
+    </object>
+</java>
