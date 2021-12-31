@@ -31,3 +31,6 @@ target/
 
 # idea
 .idea/
+
+# vscode
+.vscode/
