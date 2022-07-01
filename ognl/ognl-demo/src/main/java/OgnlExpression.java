@@ -27,13 +27,14 @@ public class OgnlExpression {
     }
 
     public static void main(String[] args) {
+
         try {
             MemberAccess memberAccess = new DefaultMemberAccess();
-            OgnlExpression expression = new OgnlExpression("name.toCharArray()[0]");
+            OgnlExpression expression = new OgnlExpression("new int[1024*1024*1024][2]");
 
             Demo demo = new Demo("trganda");
             Map context = Ognl.createDefaultContext(demo, memberAccess);
-            Character ret = (Character)expression.getValue((OgnlContext) context, demo);
+            Object ret = expression.getValue((OgnlContext) context, demo);
 
             System.out.println(ret);
         } catch (OgnlException e) {
