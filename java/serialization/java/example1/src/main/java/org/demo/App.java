@@ -1,21 +1,16 @@
 package org.demo;
 
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 
 public class App {
     public static void serialize_test(){
-        User user = new User();
-        user.name = "jong";
-        user.address = "guess";
-        user.number = 6;
-        user.info();
+        Eval eval = new Eval();
+        eval.command = "calc";
         try {
             FileOutputStream fos = new FileOutputStream("user.ser");
             ObjectOutputStream obs = new ObjectOutputStream(fos);
-            obs.writeObject(user);
+            obs.writeObject(eval);
             obs.close();
             fos.close();
         } catch (IOException e){
@@ -23,7 +18,20 @@ public class App {
         }
     }
 
+    public static void deserialize_test() {
+        try {
+            FileInputStream fis = new FileInputStream("user.ser");
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            ois.readObject();
+            ois.close();
+            fis.close();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) {
         serialize_test();
+        deserialize_test();
     }
 }
