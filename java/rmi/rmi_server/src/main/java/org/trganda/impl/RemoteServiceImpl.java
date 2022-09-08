@@ -29,4 +29,9 @@ public class RemoteServiceImpl extends UnicastRemoteObject
     public void doSome(Message msg) throws RemoteException {
         System.out.println(msg);
     }
+
+    @Override
+    public void doSome(Object msg) throws RemoteException {
+        System.out.println("call doSome(Object);");
+    }
 }
