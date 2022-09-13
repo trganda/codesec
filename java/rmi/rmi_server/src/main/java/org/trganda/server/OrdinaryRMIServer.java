@@ -16,7 +16,7 @@ public class OrdinaryRMIServer {
         // If the obj has no extens the UnicastRemoteObject, call exportObject
         // to return a stub
         if (!(obj instanceof UnicastRemoteObject)) {
-           obj = UnicastRemoteObject.exportObject((Remote) obj, 0);
+           obj = UnicastRemoteObject.exportObject((Remote) obj);
         }
         reg.bind(name, (Remote) obj);
     }
