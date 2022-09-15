@@ -24,7 +24,7 @@ public class OrdinaryRMIServer {
     public static void main(String[] args) {
         try {
             OrdinaryRMIServer rs = new OrdinaryRMIServer();
-            RemoteServiceImpl rsi = new RemoteServiceImpl();
+            RemoteServiceImpl rsi = new RemoteServiceImpl(56050);
             rs.startListener("server", rsi);
         } catch (Exception ex) {
             ex.printStackTrace();
