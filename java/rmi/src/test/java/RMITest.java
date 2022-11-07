@@ -9,7 +9,7 @@ public class RMITest {
     @Test
     public void RemoteServiceTest() throws IOException {
         ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("1.txt"));
-        oos.writeLong(123);
+        oos.writeFloat((float) 123123213.1231);
         oos.close();
     }
 }
