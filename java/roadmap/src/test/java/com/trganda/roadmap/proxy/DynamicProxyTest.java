@@ -1,9 +1,10 @@
 package com.trganda.roadmap.proxy;
 
+import org.junit.Test;
+
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.Test;
 
 public class DynamicProxyTest {
   @Test

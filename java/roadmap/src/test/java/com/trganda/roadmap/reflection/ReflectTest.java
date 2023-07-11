@@ -1,12 +1,13 @@
 package com.trganda.roadmap.reflection;
 
+import org.junit.Test;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Test;
 
 public class ReflectTest {
 
