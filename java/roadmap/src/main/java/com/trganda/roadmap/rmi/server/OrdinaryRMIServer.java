@@ -1,7 +1,9 @@
 package com.trganda.roadmap.rmi.server;
 
 import com.trganda.roadmap.rmi.impl.RemoteServiceImpl;
+import com.trganda.roadmap.rmi.impl.ServerSocketFactoryImpl;
 
+import java.net.InetAddress;
 import java.rmi.AlreadyBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -26,7 +28,9 @@ public class OrdinaryRMIServer {
         try {
             OrdinaryRMIServer rs = new OrdinaryRMIServer();
             // explicitly set the port of server
-            RemoteServiceImpl rsi = new RemoteServiceImpl(56050);
+//             RemoteServiceImpl rsi = new RemoteServiceImpl(56050);
+            // explicitly set the port and address of server
+            RemoteServiceImpl rsi = new RemoteServiceImpl(56050, null,  new ServerSocketFactoryImpl(InetAddress.getByName("127.0.0.1")));
             rs.startListener("server", rsi);
         } catch (Exception ex) {
             ex.printStackTrace();
