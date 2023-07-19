@@ -12,9 +12,10 @@ public class OrdinaryRMIServerWithAddress {
     public static void main(String[] args) {
         try {
             int registryPort = Integer.parseInt(args[0]);
-            int serverPort = Integer.parseInt(args[1]);
-            String serverIP = args[2];
-            String serverName = args[3];
+            String registryIP = args[1];
+            int serverPort = Integer.parseInt(args[2]);
+            String serverIP = args[3];
+            String serverName = args[4];
 
             System.out.println(registryPort + " " + serverPort + " " + serverIP + " " + serverName);
 
@@ -24,7 +25,11 @@ public class OrdinaryRMIServerWithAddress {
                             serverPort,
                             null,
                             new ServerSocketFactoryImpl(InetAddress.getByName(serverIP)));
-            Registry reg = LocateRegistry.createRegistry(registryPort);
+            Registry reg =
+                    LocateRegistry.createRegistry(
+                            registryPort,
+                            null,
+                            new ServerSocketFactoryImpl(InetAddress.getByName(registryIP)));
 
             reg.bind(serverName, rsi);
         } catch (Exception ex) {
