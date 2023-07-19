@@ -28,9 +28,9 @@ public class ServerSocketFactoryImpl implements RMIServerSocketFactory {
      * its Object.equals implementation).
      */
     @Override
-    public boolean equals ( Object obj )
-    {
-        return obj != null && this.getClass() == obj.getClass() && this.bindAddr.equals( ((ServerSocketFactoryImpl)obj).bindAddr );
+    public boolean equals(Object obj) {
+        return obj != null
+                && this.getClass() == obj.getClass()
+                && this.bindAddr.equals(((ServerSocketFactoryImpl) obj).bindAddr);
     }
-
 }
