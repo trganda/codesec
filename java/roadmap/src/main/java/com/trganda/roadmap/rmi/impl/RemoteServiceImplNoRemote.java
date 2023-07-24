@@ -11,14 +11,4 @@ public class RemoteServiceImplNoRemote implements RemoteService {
     public void doSome(String msg) throws RemoteException {
         System.out.println("[" + msg + "]");
     }
-
-    @Override
-    public void doSome(Message msg) throws RemoteException {
-        System.out.println(msg);
-    }
-
-    @Override
-    public void doSome(Object msg) throws RemoteException {
-        System.out.println("call doSome(Object);");
-    }
 }

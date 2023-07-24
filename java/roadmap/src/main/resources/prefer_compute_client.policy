@@ -1,0 +1,5 @@
+grant {
+	# 客户端需要访问注册中心和服务端的动态端口。本条指定目标IP、目标端口。不便提前预知动
+态端口，本条用通配符允许所有目标端口。
+	permission java.net.SocketPermission "127.0.0.1:*", "connect,resolve";
+};

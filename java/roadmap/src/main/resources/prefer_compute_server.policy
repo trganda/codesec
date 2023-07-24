@@ -1,0 +1,14 @@
+grant codeBase "http://127.0.0.1:8000/" {
+	permission java.security.AllPermission;
+};
+
+grant {
+    # 服务端需要访问注册中心的端口，本条允许主动创建TCP连接。
+	permission java.net.SocketPermission "127.0.0.1:1099", "connect,resolve";
+	# 客户端需要访问注册中心和服务端的动态端口。本条表示动态端口允许哪些源IP、源端口来连
+自己。无法提前预知客户端所用源端口，本条用通配符允许所有源端口。好像端口那
+里不支持逗号分隔的列表，但支持-号。
+	permission java.net.SocketPermission "127.0.0.1:*", "accept,resolve";
+	# 服务端会访问客户端指定的 codebase。
+	permission java.net.SocketPermission "127.0.0.1:8080", "connect,resolve";
+};
