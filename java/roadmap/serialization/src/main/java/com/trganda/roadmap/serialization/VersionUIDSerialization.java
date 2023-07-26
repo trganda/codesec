@@ -6,11 +6,13 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class CustomSerialization implements java.io.Serializable {
+public class VersionUIDSerialization implements java.io.Serializable {
     public String name;
     public transient int age;
+    public static String bio = "This is a bio";
+    private static final long serialVersionUID = 1111111111111111112L;
 
-    public CustomSerialization(String name, int age) {
+    public VersionUIDSerialization(String name, int age) {
         this.name = name;
         this.age = age;
     }
@@ -21,8 +23,7 @@ public class CustomSerialization implements java.io.Serializable {
         s.writeObject("This is a object");
     }
 
-    private void readObject(java.io.ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
         age = s.readInt();
         String message = (String) s.readObject();
@@ -31,22 +32,27 @@ public class CustomSerialization implements java.io.Serializable {
 
     @Override
     public String toString() {
-        return "CustomSerialization{" + "name='" + name + '\'' + ", age=" + age + '}';
+        return "CustomSerialization2{"
+                + "name='"
+                + name
+                + '\''
+                + ", age="
+                + age
+                + '\''
+                + ", bio='"
+                + bio
+                + '\''
+                + '}';
     }
 
     public static void main(String[] args) {
         try (ObjectOutputStream oos =
                 new ObjectOutputStream(Files.newOutputStream(Paths.get("target/person.bin")))) {
-            oos.writeObject(new CustomSerialization("trganda", 18));
+            VersionUIDSerialization customSerialization2 =
+                    new VersionUIDSerialization("Trganda", 25);
+            VersionUIDSerialization.bio = "This is a new bio";
+            oos.writeObject(customSerialization2);
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try (ObjectInputStream ois =
-                new ObjectInputStream(Files.newInputStream(Paths.get("target/person.bin")))) {
-            CustomSerialization person = (CustomSerialization) ois.readObject();
-            System.out.println(person);
-        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
