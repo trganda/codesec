@@ -24,7 +24,7 @@ import java.io.*;
 //        Employee e = new Employee();
 //
 //        try {
-//            FileOutputStream fileOut = new FileOutputStream("employee.bin");
+//            FileOutputStream fileOut = new FileOutputStream("target/employee.bin");
 //            ObjectOutputStream out = new ObjectOutputStream(fileOut);
 //            out.writeObject(e);
 //            out.close();
@@ -53,7 +53,7 @@ public class Employee extends Person { // v2
     public static void main(String[] args) {
         Employee e = null;
         try {
-            FileInputStream fileIn = new FileInputStream("employee.bin");
+            FileInputStream fileIn = new FileInputStream("target/employee.bin");
             ObjectInputStream in = new ObjectInputStream(fileIn);
             e = (Employee) in.readObject();
             in.close();
