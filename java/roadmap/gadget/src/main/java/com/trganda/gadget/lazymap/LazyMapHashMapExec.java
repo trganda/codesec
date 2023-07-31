@@ -1,4 +1,4 @@
-package com.trganda.gadget.cc3;
+package com.trganda.gadget.lazymap;
 
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.functors.ChainedTransformer;

@@ -1,4 +1,4 @@
-package com.trganda.gadget.cc4;
+package com.trganda.gadget.lazymap;
 
 import com.trganda.gadget.utils.Reflections;
 
@@ -17,7 +17,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LazyMapAnnotationExec {
+public class LazyMapCC4AnnotationExec {
 
     public static Object getObject() throws Exception {
         ChainedTransformer fakeTransformer =

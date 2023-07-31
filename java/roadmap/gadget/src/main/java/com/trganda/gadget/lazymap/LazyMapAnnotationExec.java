@@ -1,4 +1,4 @@
-package com.trganda.gadget.cc3;
+package com.trganda.gadget.lazymap;
 
 import com.trganda.gadget.utils.Reflections;
 
