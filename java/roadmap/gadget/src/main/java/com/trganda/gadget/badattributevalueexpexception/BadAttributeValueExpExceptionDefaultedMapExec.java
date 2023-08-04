@@ -41,9 +41,9 @@ public class BadAttributeValueExpExceptionDefaultedMapExec {
 
         TiedMapEntry tiedMapEntry = new TiedMapEntry(defaultedMap, "fake");
 
+        // 参数设置为 null，避免序列化时触发 toString 方法
         BadAttributeValueExpException badAttributeValueExpException =
                 new BadAttributeValueExpException(null);
-        // 修改 val 的值，避免序列化时触发 toString 方法
         Reflections.setFieldValue(badAttributeValueExpException, "val", tiedMapEntry);
         // 修改 key 的值，从而触发 LazyMap#get 中 factory.transform 方法的执行
         Reflections.setFieldValue(tiedMapEntry, "key", "k");

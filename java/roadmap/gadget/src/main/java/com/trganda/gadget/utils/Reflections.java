@@ -1,13 +1,13 @@
 package com.trganda.gadget.utils;
 
-import java.lang.reflect.*;
-import java.util.ArrayList;
+import com.nqzero.permit.Permit;
 
 import sun.reflect.ReflectionFactory;
 
-import com.nqzero.permit.Permit;
+import java.lang.reflect.*;
+import java.util.ArrayList;
 
-@SuppressWarnings ( "restriction" )
+@SuppressWarnings("restriction")
 public class Reflections {
 
     public static void setAccessible(AccessibleObject member) {
@@ -25,20 +25,31 @@ public class Reflections {
         }
     }
 
+    public static Method getMethod(
+            final Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+        Method method = null;
+        try {
+            method = clazz.getDeclaredMethod(methodName, parameterTypes);
+            setAccessible(method);
+        } catch (NoSuchMethodException e) {
+            if (clazz.getSuperclass() != null) method = getMethod(clazz.getSuperclass(), methodName, parameterTypes);
+        }
+        return method;
+    }
+
     public static Field getField(final Class<?> clazz, final String fieldName) {
         Field field = null;
         try {
             field = clazz.getDeclaredField(fieldName);
             setAccessible(field);
-        }
-        catch (NoSuchFieldException ex) {
-            if (clazz.getSuperclass() != null)
-                field = getField(clazz.getSuperclass(), fieldName);
+        } catch (NoSuchFieldException ex) {
+            if (clazz.getSuperclass() != null) field = getField(clazz.getSuperclass(), fieldName);
         }
         return field;
     }
 
-    public static void setFieldValue(final Object obj, final String fieldName, final Object value) throws Exception {
+    public static void setFieldValue(final Object obj, final String fieldName, final Object value)
+            throws Exception {
         final Field field = getField(obj.getClass(), fieldName);
         field.set(obj, value);
     }
@@ -54,7 +65,7 @@ public class Reflections {
         return ctor;
     }
 
-    public static Object newInstance(String className, Object ... args) throws Exception {
+    public static Object newInstance(String className, Object... args) throws Exception {
         return getFirstCtor(className).newInstance(args);
     }
 
@@ -64,7 +75,7 @@ public class Reflections {
         Class[] argsType = constructor.getParameterTypes();
         ArrayList<Object> args = new ArrayList<>();
 
-        for (Class clazz: argsType) {
+        for (Class clazz : argsType) {
             if (clazz.isPrimitive()) {
                 args.add(createDefaultPrimitive(clazz));
             } else if (clazz.isArray()) {
@@ -85,28 +96,42 @@ public class Reflections {
         } else if (clazz == char.class) {
             return '0';
         } else if (clazz == byte.class) {
-            return (byte)64;
-        } else if (clazz == short.class || clazz == int.class ||
-            clazz == long.class || clazz == float.class || clazz == double.class) {
+            return (byte) 64;
+        } else if (clazz == short.class
+                || clazz == int.class
+                || clazz == long.class
+                || clazz == float.class
+                || clazz == double.class) {
             return 0;
         } else {
             return null;
         }
     }
 
-    public static <T> T createWithoutConstructor ( Class<T> classToInstantiate )
-        throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+    public static <T> T createWithoutConstructor(Class<T> classToInstantiate)
+            throws NoSuchMethodException,
+                    InstantiationException,
+                    IllegalAccessException,
+                    InvocationTargetException {
         return createWithConstructor(classToInstantiate, Object.class, new Class[0], new Object[0]);
     }
 
-    @SuppressWarnings ( {"unchecked"} )
-    public static <T> T createWithConstructor ( Class<T> classToInstantiate, Class<? super T> constructorClass, Class<?>[] consArgTypes, Object[] consArgs )
-        throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+    @SuppressWarnings({"unchecked"})
+    public static <T> T createWithConstructor(
+            Class<T> classToInstantiate,
+            Class<? super T> constructorClass,
+            Class<?>[] consArgTypes,
+            Object[] consArgs)
+            throws NoSuchMethodException,
+                    InstantiationException,
+                    IllegalAccessException,
+                    InvocationTargetException {
         Constructor<? super T> objCons = constructorClass.getDeclaredConstructor(consArgTypes);
         setAccessible(objCons);
-        Constructor<?> sc = ReflectionFactory.getReflectionFactory().newConstructorForSerialization(classToInstantiate, objCons);
+        Constructor<?> sc =
+                ReflectionFactory.getReflectionFactory()
+                        .newConstructorForSerialization(classToInstantiate, objCons);
         setAccessible(sc);
-        return (T)sc.newInstance(consArgs);
+        return (T) sc.newInstance(consArgs);
     }
-
 }
