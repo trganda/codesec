@@ -210,7 +210,7 @@ public class MozillaRhinoExec {
         ObjectOutputStream oos =
                 new ObjectOutputStream(
                         Files.newOutputStream(Paths.get("target/MozillaRhinoExec.bin")));
-        oos.writeObject(getObjectTest());
+        oos.writeObject(getObject());
 
         ObjectInputStream ois =
                 new ObjectInputStream(
