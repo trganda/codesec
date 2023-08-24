@@ -9,6 +9,8 @@ import org.apache.commons.collections4.functors.ConstantTransformer;
 import org.apache.commons.collections4.map.DefaultedMap;
 import org.junit.Test;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Base64;
 import java.util.HashMap;
@@ -39,7 +41,8 @@ public class PropertyUtilsBeanTest {
 
     @Test
     public void beanDemo2Test() {
-        DefaultedMap defaultedMap = new DefaultedMap(new ConstantTransformer<>("1"));
-
+        ScriptEngineManager sem = new ScriptEngineManager();
+        ScriptEngine engine = sem.getEngineByName("javascript");
+        System.out.println(1);
     }
 }
