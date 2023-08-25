@@ -1,4 +1,4 @@
-package com.trganda.xmldecoder;
+package com.trganda.xmldecoder.bean;
 
 public class Person {
     public String name;
@@ -33,5 +33,13 @@ public class Person {
     public void setAge(int age) {
         System.out.println("call setAge of Person");
         this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+            "name='" + name + '\'' +
+            ", age=" + age +
+            '}';
     }
 }
