@@ -1,9 +1,8 @@
-package com.trganda.xstream.sortedmap;
+package com.trganda.xstream.eventhandler;
 
 import com.thoughtworks.xstream.XStream;
-import com.trganda.xstream.Square;
 
-public class XStreamSortedMap {
+public class XStreamEventHandlerExec {
     public static void main(String[] args) {
         String from = "<dynamic-proxy>\n" +
             "<interface>java.lang.Comparable</interface>\n" +
@@ -18,6 +17,7 @@ public class XStreamSortedMap {
             "    <action>start</action>\n" +
             "</handler>\n" +
             "</dynamic-proxy>";
+
         Comparable resultXML = (Comparable) new XStream().fromXML(from);
         System.out.println(resultXML);
         resultXML.compareTo("");
