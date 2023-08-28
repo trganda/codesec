@@ -15,6 +15,7 @@
         <module>serialization</module>
         <module>gadget</module>
         <module>xmldecoder</module>
+        <module>xstream</module>
     </modules>
 
     <properties>
