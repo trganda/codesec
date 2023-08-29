@@ -6,7 +6,6 @@ public class XStreamTreeSetExec {
     public static void main(String[] args) {
         String from =
                 "<tree-set>\n"
-                        + "    <string>foo</string>\n"
                         + "    <dynamic-proxy>\n"
                         + "    <interface>java.lang.Comparable</interface>\n"
                         + "    <handler class=\"java.beans.EventHandler\">\n"
