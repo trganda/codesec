@@ -11,7 +11,6 @@ import org.apache.commons.collections.functors.ConstantTransformer;
 import org.apache.commons.collections.functors.InstantiateTransformer;
 import org.apache.commons.collections.map.LazyMap;
 
-import javax.xml.transform.Templates;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationHandler;
@@ -21,6 +20,8 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.transform.Templates;
 
 public class TemplatesImplTrAXFilterExec {
     public static Object getObject() throws Exception {

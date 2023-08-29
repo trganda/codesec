@@ -1,9 +1,7 @@
 package com.trganda.roadmap.rmi.server;
 
 import com.trganda.roadmap.rmi.impl.RemoteServiceImplNoRemote;
-import com.trganda.roadmap.rmi.impl.ServerSocketFactoryImpl;
 
-import java.net.InetAddress;
 import java.rmi.Remote;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;

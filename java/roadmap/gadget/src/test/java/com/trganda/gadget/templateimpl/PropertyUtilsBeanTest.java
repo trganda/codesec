@@ -5,15 +5,13 @@ import com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl;
 import com.trganda.gadget.utils.Reflections;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.collections4.functors.ConstantTransformer;
-import org.apache.commons.collections4.map.DefaultedMap;
 import org.junit.Test;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Base64;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Base64;
-import java.util.HashMap;
 
 public class PropertyUtilsBeanTest {
     @Test

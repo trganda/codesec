@@ -6,7 +6,7 @@ public class XStreamMarshal {
     private static final XStream xstream =
             new XStream() {
                 {
-                    //processAnnotations(Square.class);
+                    processAnnotations(Square.class);
                 }
             };
 
