@@ -21,6 +21,6 @@ public class XStreamTreeSetExec {
                         + "    </dynamic-proxy>\n"
                         + "</tree-set>";
 
-        Object resultXML = new XStream().fromXML(from);
+        new XStream().fromXML(from);
     }
 }
