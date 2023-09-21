@@ -16,6 +16,7 @@
         <module>gadget</module>
         <module>xmldecoder</module>
         <module>xstream</module>
+        <module>jackson</module>
     </modules>
 
     <properties>

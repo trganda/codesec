@@ -1,5 +1,5 @@
 <tree-set>
-    <string>calc</string>
+    <string>open -a calculator</string>
     <dynamic-proxy>
         <interface>java.lang.Comparable</interface>
         <handler class="org.codehaus.groovy.runtime.ConvertedClosure">

