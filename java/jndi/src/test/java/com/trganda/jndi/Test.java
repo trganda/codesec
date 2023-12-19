@@ -11,10 +11,11 @@ public class Test {
         System.setProperty("java.rmi.server.useCodebaseOnly", "false");
 
         Properties properties = new Properties();
-        properties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        //properties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        //properties.setProperty(Context.PROVIDER_URL, "ldap://192.168.1.3:1389");
 
         Context context = new InitialContext(properties);
-        Object object = context.lookup("ldap://192.168.1.7:1389/ikbteq");
+        Object object = context.lookup("ldap://127.0.0.1:1389/tomcat_xxe");
         System.out.println(object);
     }
 }
